@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="th"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Carbon Footprint Calculator | คำนวณคาร์บอนฟุตพริ้นท์ของฉัน</title>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--g:#1f7a3e;--y:#f5a623;--ink:#1d2a22;--mut:#5d6b62;--bg:#f4f8ef;color-scheme:light}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Kanit',system-ui,sans-serif;background:linear-gradient(#fff7dd,var(--bg) 320px);color:var(--ink);padding-bottom:120px}
+header{background:repeating-linear-gradient(90deg,var(--y) 0 56px,var(--g) 56px 112px);padding:0}
+header div{background:linear-gradient(rgba(0,0,0,.35),rgba(0,0,0,.5));color:#fff;text-align:center;padding:28px 16px 24px}
+h1{margin:0;font-size:clamp(24px,5vw,38px)}header p{margin:6px auto 0;max-width:640px;opacity:.95}
+main,section,details{max-width:1060px;margin:0 auto;padding:0 14px}
+h2{font-size:20px;margin:26px 0 10px}
+.chip{display:inline-block;padding:4px 14px;border-radius:99px;font-weight:600}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px}
+.card{background:#fff;border-radius:20px;padding:14px;box-shadow:0 2px 10px rgba(30,60,40,.09);display:flex;flex-direction:column;gap:10px;border:2px solid transparent}
+.card.on{border-color:var(--c)}
+.top{display:flex;gap:12px;align-items:center}
+.ic{width:64px;height:64px;border-radius:18px;background:var(--t);display:grid;place-items:center;flex:none}
+.ic svg{width:46px;height:46px}
+.top b{font-size:18px}
+select{width:100%;font:inherit;font-size:14px;padding:8px;border-radius:10px;border:2px solid #dfe7dc;background:#fbfdf9;color:var(--ink)}
+.row{display:flex;align-items:center;gap:8px}
+.row button{width:44px;height:44px;border-radius:14px;border:0;background:var(--c);color:#fff;font:600 24px/1 'Kanit';cursor:pointer}
+.row button:active{transform:scale(.94)}
+.row input{width:80px;height:44px;text-align:center;font:600 20px 'Kanit';border:2px solid #dfe7dc;border-radius:14px}
+.u{color:var(--mut)}.kg{margin-left:auto;text-align:right;font-weight:600;font-size:20px;color:var(--c)}.kg small{display:block;font-size:11px;font-weight:400;color:var(--mut)}
+.f{font-size:12px;color:var(--mut)}
+#res{background:#fff;border-radius:24px;margin-top:22px;padding:20px;box-shadow:0 4px 18px rgba(30,60,40,.12)}
+#big{font-size:clamp(44px,12vw,72px);font-weight:600;color:var(--g);line-height:1}#big small{font-size:20px;color:var(--mut);margin-left:6px}
+.stack{display:flex;height:18px;border-radius:9px;overflow:hidden;background:#e8eee5;margin:14px 0 8px}.stack i{display:block;transition:width .3s}
+.leg{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px}.leg span:before{content:"";display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--c);margin-right:5px}
+.eq{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin:14px 0}.eq div{background:#f4f8ef;border-radius:14px;padding:10px 12px;font-size:14px}.eq b{font-size:20px;color:var(--g)}
+#tip{background:#fff3cf;border-radius:14px;padding:12px 14px;font-size:14px}
+details{margin-top:18px;font-size:13px;color:var(--mut)}summary{cursor:pointer;font-weight:600;color:var(--ink)}details li{margin:5px 0}
+#bar{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:3px solid var(--y);padding:10px 14px calc(10px + env(safe-area-inset-bottom));display:flex;gap:12px;align-items:center;justify-content:center;box-shadow:0 -4px 16px rgba(0,0,0,.1);z-index:5}
+#bar b{font-size:24px;color:var(--g)}#bar button{font:600 14px 'Kanit';border:0;border-radius:12px;padding:10px 16px;background:#eef2ea;color:var(--ink);cursor:pointer}
+</style></head><body>
+<header><div><h1>🌏 คำนวณคาร์บอนฟุตพริ้นท์ของฉัน</h1><p>เลือกสิ่งรอบตัวที่ใช้ใน 1 วัน ใส่จำนวน แล้วดูว่าปล่อยก๊าซเรือนกระจกเท่าไหร่ (หน่วย kgCO₂e) พร้อมวิธีลด</p></div></header>
+<main id="app"></main>
+<section id="res"><div style="font-weight:600">ผลรวมของฉันวันนี้</div><div id="big">0<small>kgCO₂e</small></div><div id="lv" style="margin-top:6px"></div>
+<div class="stack" id="stack"></div><div class="leg" id="leg"></div><div class="eq" id="eq"></div><div id="tip"></div>
+<div class="f" style="margin-top:10px">ระดับผลลัพธ์เป็นเกณฑ์เพื่อความสนุกของแอป ไม่ใช่มาตรฐานทางวิชาการ</div></section>
+<details><summary>📚 ค่าอ้างอิงและสมมติฐาน (ค่าประมาณเพื่อการเรียนรู้)</summary><ul>
+<li><b>ไฟฟ้า</b> 0.5562 kgCO₂e/kWh = Scope 2 (0.4750) + Scope 3 (0.0812) ตามค่าที่ อบก. ประกาศ ใช้ตั้งแต่ 1 ม.ค. 2569 · แอร์คำนวณจาก BTU ÷ 12 = วัตต์ (EER ≈ 12) · กำลังไฟของพัดลม ไฟ คอมพิวเตอร์ และมือถือเป็นค่าทั่วไป</li>
+<li><b>น้ำมัน</b> เบนซิน 2.2327 และดีเซล 2.7406 kgCO₂e/ลิตร (อบก. EF สำหรับคาร์บอนฟุตพริ้นท์องค์กร) · มอเตอร์ไซค์ 40 กม./ลิตร รถยนต์ 10 กม./ลิตร รถเมล์ 3 กม./ลิตร คนเต็มราว 30 คน เป็นสมมติฐานของแอป</li>
+<li><b>ขวดน้ำ PET 600 มล.</b> ≈ 0.116 kgCO₂e/ขวด (ค่าเฉลี่ยจาก 103–129 gCO₂e ในเอกสารอบรม อบก.) · <b>กระดาษ A4</b> 2.1020 kgCO₂e/กก. × ประมาณ 5 กรัม/แผ่น</li>
+<li><b>ผัดไทย</b> กินที่ร้าน 1.465 และสั่งส่ง 1.734 kgCO₂e/จาน จากงานวิจัยกรณีศึกษาร้านหนึ่ง (วารสารวิทยาศาสตร์และเทคโนโลยี ม.ราชภัฏอุดรธานี 2566) ใช้แทนอาหารจานเดียวทั่วไปได้แบบหยาบๆ</li></ul></details>
+<div id="bar"><span>รวม <b id="t2">0</b> kgCO₂e</span><button id="rs">ล้างค่า</button><button onclick="document.getElementById('res').scrollIntoView({behavior:'smooth'})">ดูผล ↓</button></div>
+<script>
+const E=.5562,G=2.2327,D=2.7406,$=id=>document.getElementById(id);
+const IC={
+air:'<rect x="5" y="9" width="38" height="16" rx="5" fill="#e8f1f8" stroke="#8fb3cc" stroke-width="2"/><path d="M10 20h28" stroke="#8fb3cc" stroke-width="2"/><path d="M14 30l-2 8M24 30v10M34 30l2 8" stroke="#4aa3df" stroke-width="3" stroke-linecap="round"/>',
+fan:'<circle cx="24" cy="20" r="14" fill="#e8f6ee" stroke="#2f9e5b" stroke-width="2"/><path d="M24 20c-2-8 6-9 6-4s-6 4-6 4zM24 20c8-2 9 6 4 6s-4-6-4-6zM24 20c2 8-6 9-6 4s6-4 6 4z" fill="#2f9e5b"/><rect x="22" y="34" width="4" height="8" fill="#2f9e5b"/><rect x="15" y="41" width="18" height="3" rx="1.5" fill="#2f9e5b"/>',
+bulb:'<path d="M24 5a13 13 0 0 0-6 24v5h12v-5a13 13 0 0 0-6-24z" fill="#ffe27a" stroke="#f2a81d" stroke-width="2"/><rect x="18" y="36" width="12" height="3" rx="1.5" fill="#8a94a0"/><rect x="20" y="41" width="8" height="3" rx="1.5" fill="#8a94a0"/>',
+pc:'<rect x="9" y="10" width="30" height="20" rx="3" fill="#dfe8f5" stroke="#5b7bb5" stroke-width="2"/><path d="M4 36h40l-3 4H7z" fill="#5b7bb5"/>',
+phone:'<rect x="14" y="4" width="20" height="40" rx="4" fill="#fff" stroke="#444" stroke-width="2"/><rect x="18" y="10" width="12" height="22" fill="#9fe3b4"/><path d="M26 14l-4 6h4l-2 6 5-8h-4z" fill="#2f9e5b"/>',
+moto:'<circle cx="11" cy="33" r="7" fill="none" stroke="#333" stroke-width="3"/><circle cx="37" cy="33" r="7" fill="none" stroke="#333" stroke-width="3"/><path d="M11 33l8-14h9l9 14M19 19l-3-5h-4M24 25h8" stroke="#e8433b" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>',
+car:'<path d="M5 30l4-10a4 4 0 0 1 4-3h22a4 4 0 0 1 4 3l4 10v7H5z" fill="#4aa3df"/><rect x="12" y="20" width="10" height="7" fill="#e6f4fc"/><rect x="26" y="20" width="10" height="7" fill="#e6f4fc"/><circle cx="14" cy="37" r="5" fill="#333"/><circle cx="34" cy="37" r="5" fill="#333"/>',
+bus:'<rect x="6" y="8" width="36" height="30" rx="6" fill="#f2a81d"/><rect x="10" y="13" width="28" height="11" rx="2" fill="#e6f4fc"/><circle cx="14" cy="38" r="4" fill="#333"/><circle cx="34" cy="38" r="4" fill="#333"/><rect x="10" y="28" width="6" height="3" fill="#fff"/>',
+bottle:'<rect x="17" y="4" width="14" height="6" rx="2" fill="#e8433b"/><path d="M19 10h10l3 8v22a4 4 0 0 1-4 4H20a4 4 0 0 1-4-4V18z" fill="#9fd8f5" stroke="#4aa3df" stroke-width="2"/><rect x="16" y="22" width="16" height="10" fill="#fff" opacity=".8"/>',
+paper:'<path d="M12 4h18l8 8v32H12z" fill="#fff" stroke="#9aa8b4" stroke-width="2"/><path d="M16 20h18M16 26h18M16 32h12" stroke="#9aa8b4" stroke-width="2"/>',
+food:'<ellipse cx="24" cy="30" rx="19" ry="9" fill="#fff" stroke="#e0a95a" stroke-width="2"/><path d="M10 28c4-12 24-12 28 0z" fill="#f2a81d"/><circle cx="20" cy="22" r="2.5" fill="#2f9e5b"/><circle cx="28" cy="21" r="2.5" fill="#e8433b"/>'};
+const CATS={e:['⚡ ไฟฟ้า','#f2a81d','#fff3cf'],t:['🚌 การเดินทาง','#3a8fd6','#e1f0fc'],p:['🧴 ของใช้และขยะ','#2f9e5b','#e3f6e8'],f:['🍜 อาหาร','#e8643c','#ffe4dc']};
+// [cat, ชื่อ, ไอคอน, หน่วย, step, [[ตัวเลือก, kgCO2e ต่อหน่วย]]]
+const IT=[
+['e','แอร์','air','ชั่วโมง',.5,[9000,12000,18000,24000].map(b=>[b.toLocaleString()+' BTU',b/12000*E])],
+['e','พัดลม','fan','ชั่วโมง',.5,[['ตั้งพื้น/ติดผนัง ~50 W',.05*E]]],
+['e','ไฟ LED ในห้อง','bulb','ชั่วโมง',.5,[['10 หลอด × 18 W',.18*E],['4 หลอด × 18 W',.072*E]]],
+['e','คอมพิวเตอร์','pc','ชั่วโมง',.5,[['โน้ตบุ๊ก ~50 W',.05*E],['ตั้งโต๊ะ ~150 W',.15*E]]],
+['e','ชาร์จโทรศัพท์','phone','ครั้ง',1,[['ชาร์จเต็ม ~0.02 kWh',.02*E]]],
+['t','มอเตอร์ไซค์','moto','กม.',1,[['เบนซิน ~40 กม./ลิตร',G/40]]],
+['t','รถยนต์ส่วนตัว','car','กม.',1,[['นั่งคนเดียว ~10 กม./ลิตร',G/10],['นั่งร่วมกัน 4 คน',G/40]]],
+['t','รถเมล์','bus','กม.',1,[['ดีเซล คนเต็มราว 30 คน',D/90]]],
+['p','ขวดน้ำพลาสติก PET','bottle','ขวด',1,[['ขนาด 600 มล.',.116]]],
+['p','กระดาษ A4','paper','แผ่น',1,[['80 แกรม ~5 กรัม',.0105]]],
+['f','ผัดไทย 1 จาน','food','จาน',1,[['กินที่ร้าน',1.465],['สั่งเดลิเวอรี',1.734]]]];
+const st=IT.map(()=>({q:0,o:0})),fmt=v=>v>=10?v.toFixed(1):v>=1?v.toFixed(2):v.toFixed(3);
+let h='';for(const c in CATS){h+=`<h2><span class="chip" style="background:${CATS[c][2]};color:${CATS[c][1]}">${CATS[c][0]}</span></h2><div class="grid">`;
+IT.forEach((t,i)=>{if(t[0]!=c)return;h+=`<div class="card" id="c${i}" style="--c:${CATS[c][1]};--t:${CATS[c][2]}"><div class="top"><div class="ic"><svg viewBox="0 0 48 48">${IC[t[2]]}</svg></div><b>${t[1]}</b></div>
+<select id="o${i}" aria-label="${t[1]}">${t[5].map((o,j)=>`<option value="${j}">${o[0]}</option>`).join('')}</select>
+<div class="f" id="f${i}"></div><div class="row"><button data-i="${i}" data-d="-1" aria-label="ลด">−</button><input id="q${i}" type="number" inputmode="decimal" min="0" step="${t[4]}" value="0"><button data-i="${i}" data-d="1" aria-label="เพิ่ม">+</button><span class="u">${t[3]}</span><div class="kg"><span id="k${i}">0</span><small>kgCO₂e</small></div></div></div>`});h+='</div>';}
+$('app').innerHTML=h;
+const TIPS={e:()=>`ตั้งแอร์ให้เหมาะสมและปิดไฟ/พัดลมเมื่อไม่มีคน เพราะแอร์ 12,000 BTU เปิด 1 ชั่วโมง ≈ ${E.toFixed(2)} kgCO₂e`,
+t:()=>`ลองเดิน ปั่นจักรยาน หรือนั่งรถร่วมกัน รถเมล์ปล่อยต่อคนต่อกิโลเมตรน้อยกว่ารถส่วนตัวที่นั่งคนเดียวราว ${Math.round((G/10)/(D/90))} เท่า (ตามสมมติฐานของแอป)`,
+p:()=>`พกกระบอกน้ำส่วนตัวแทนขวดพลาสติก ขวด PET 600 มล. 10 ขวด ≈ ${(1.16).toFixed(2)} kgCO₂e`,
+f:()=>`กินที่ร้านหรือพกภาชนะแทนการสั่งส่ง ลดได้ราว ${(1.734-1.465).toFixed(2)} kgCO₂e ต่อจาน (กรณีศึกษาผัดไทย)`};
+function calc(){let tot=0;const cat={e:0,t:0,p:0,f:0};
+IT.forEach((t,i)=>{const o=t[5][st[i].o],v=st[i].q*o[1];tot+=v;cat[t[0]]+=v;$('k'+i).textContent=fmt(v);$('f'+i).textContent='= '+fmt(o[1])+' kgCO₂e ต่อ'+t[3];$('c'+i).classList.toggle('on',st[i].q>0);});
+$('big').innerHTML=fmt(tot)+'<small>kgCO₂e</small>';$('t2').textContent=fmt(tot);
+$('lv').textContent=tot==0?'เลือกกิจกรรมของวันนี้ได้เลย 👆':tot<=3?'🌱 ระดับรักษ์โลก':tot<=8?'🙂 ระดับปานกลาง ลองลดอีกนิด':'🔥 ปล่อยค่อนข้างสูง ลองดูคำแนะนำด้านล่าง';
+$('stack').innerHTML=Object.keys(cat).map(c=>`<i style="width:${tot?cat[c]/tot*100:0}%;background:${CATS[c][1]}"></i>`).join('');
+$('leg').innerHTML=Object.keys(cat).map(c=>`<span style="--c:${CATS[c][1]}">${CATS[c][0]} ${fmt(cat[c])}</span>`).join('');
+$('eq').innerHTML=`<div>🚗 เท่ากับขับรถยนต์<br><b>${(tot/(G/10)).toFixed(1)}</b> กม.</div><div>🧴 เท่ากับขวดน้ำ 600 มล.<br><b>${Math.round(tot/.116)}</b> ขวด</div><div>❄️ เท่ากับเปิดแอร์ 12,000 BTU<br><b>${(tot/E).toFixed(1)}</b> ชม.</div><div>📅 ถ้าทำแบบนี้ทุกวัน<br><b>${Math.round(tot*365).toLocaleString()}</b> kgCO₂e/ปี</div>`;
+const top=Object.keys(cat).sort((a,b)=>cat[b]-cat[a])[0];$('tip').innerHTML=tot?'💡 <b>ลดได้ที่หมวดที่ปล่อยมากสุด:</b> '+TIPS[top]():'💡 เริ่มใส่จำนวนได้เลย ระบบจะบอกว่าอะไรปล่อยมากที่สุดและลดอย่างไร';}
+document.addEventListener('click',e=>{const b=e.target.closest('button[data-i]');if(!b)return;const i=+b.dataset.i,s=IT[i][4];st[i].q=Math.max(0,Math.round((st[i].q+s*b.dataset.d)*100)/100);$('q'+i).value=st[i].q;calc();});
+IT.forEach((t,i)=>{$('q'+i).oninput=e=>{st[i].q=Math.max(0,parseFloat(e.target.value)||0);calc();};$('o'+i).onchange=e=>{st[i].o=+e.target.value;calc();};});
+$('rs').onclick=()=>{IT.forEach((t,i)=>{st[i].q=0;st[i].o=0;$('q'+i).value=0;$('o'+i).value=0;});calc();};
+calc();
+</script></body></html>
